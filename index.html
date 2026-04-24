@@ -1,27 +1,526 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html>
+<!DOCTYPE html>
+<html lang="es">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2685.5">
-  <style type="text/css">
-    body {background-color: #f2efe9}
-    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 26.0px 'Helvetica Neue'; color: #141c34; -webkit-text-stroke: #141c34}
-    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px 'Helvetica Neue'; color: #676c87; -webkit-text-stroke: #676c87}
-    p.p3 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px 'Helvetica Neue'; color: #676c87; -webkit-text-stroke: #676c87}
-    p.p4 {margin: 0.0px 0.0px 0.0px 0.0px; font: 15.0px 'Helvetica Neue'; color: #ffffff; -webkit-text-stroke: #ffffff; background-color: #141c34}
-    span.s1 {font-kerning: none; background-color: #ffffff}
-    span.s2 {font-kerning: none; color: #bc993c; background-color: #ffffff; -webkit-text-stroke: 0px #bc993c}
-    span.s3 {font-kerning: none}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MailBox Virtual</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap');
+  :root{--bg:#f5f2ed;--card:#fff;--navy:#1a2744;--gold:#c9a84c;--gold-light:#f0e6c8;--green:#2d6a4f;--green-light:#d8f3dc;--orange:#e07a27;--orange-light:#fde8cc;--red:#c0392b;--red-light:#fde8e6;--text:#1a2744;--muted:#7a8099;--border:#e2ddd6;--shadow:0 2px 16px rgba(26,39,68,.08)}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+  #login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--navy);position:relative;overflow:hidden}
+  #login-screen::before{content:'';position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(201,168,76,.15) 0%,transparent 70%);top:-100px;right:-100px;border-radius:50%}
+  .login-box{background:var(--card);border-radius:20px;padding:48px 40px;width:380px;box-shadow:0 24px 64px rgba(0,0,0,.3);position:relative;z-index:1}
+  .login-logo{font-family:'DM Serif Display',serif;font-size:26px;color:var(--navy);margin-bottom:4px}.login-logo span{color:var(--gold)}
+  .login-subtitle{font-size:13px;color:var(--muted);margin-bottom:32px}
+  .flabel{display:block;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  .finput{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);background:var(--bg);margin-bottom:16px;outline:none;transition:border-color .2s}
+  .finput:focus{border-color:var(--gold)}
+  .btn-primary{width:100%;padding:14px;background:var(--navy);color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:background .2s,transform .1s}
+  .btn-primary:hover:not(:disabled){background:#243563;transform:translateY(-1px)}.btn-primary:disabled{opacity:.6;cursor:not-allowed}
+  .err-box{background:var(--red-light);color:var(--red);border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none}
+  #app{display:none;min-height:100vh;flex-direction:column}
+  .header{background:var(--navy);color:#fff;padding:0 32px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+  .header-logo{font-family:'DM Serif Display',serif;font-size:20px;color:#fff}.header-logo span{color:var(--gold)}
+  .header-right{display:flex;align-items:center;gap:12px}
+  .user-badge{background:rgba(255,255,255,.12);border-radius:20px;padding:6px 14px;font-size:13px;color:rgba(255,255,255,.9)}
+  .admin-badge{background:var(--gold);color:var(--navy);border-radius:20px;padding:4px 10px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+  .btn-logout{background:transparent;border:1px solid rgba(255,255,255,.3);color:rgba(255,255,255,.7);border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+  .btn-logout:hover{border-color:#fff;color:#fff}
+  .tabs{background:var(--card);border-bottom:1px solid var(--border);padding:0 32px;display:flex}
+  .tab{padding:16px 20px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s}
+  .tab.active{color:var(--navy);border-bottom-color:var(--gold);font-weight:600}.tab:hover{color:var(--navy)}
+  .content{flex:1;padding:32px;max-width:1000px;margin:0 auto;width:100%}
+  .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px}
+  .stat-card{background:var(--card);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow);display:flex;align-items:center;gap:14px}
+  .stat-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px}
+  .stat-val{font-size:26px;font-weight:700;color:var(--navy);line-height:1}.stat-label{font-size:12px;color:var(--muted);margin-top:2px}
+  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .section-title{font-family:'DM Serif Display',serif;font-size:20px;color:var(--navy)}
+  .btn-add{background:var(--gold);color:var(--navy);border:none;border-radius:10px;padding:10px 18px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s}
+  .btn-add:hover{background:#b8962e;transform:translateY(-1px)}
+  .btn-nav{background:var(--navy);color:#fff;border:none;border-radius:10px;padding:10px 18px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s}
+  .btn-nav:hover{background:#243563;transform:translateY(-1px)}
+  .mail-card{background:var(--card);border-radius:14px;padding:18px 22px;margin-bottom:10px;box-shadow:var(--shadow);display:flex;align-items:center;gap:18px;cursor:pointer;transition:box-shadow .2s,transform .15s;border:1.5px solid transparent}
+  .mail-card:hover{box-shadow:0 6px 24px rgba(26,39,68,.13);transform:translateY(-1px);border-color:var(--gold-light)}
+  .mail-thumb{width:56px;height:56px;border-radius:10px;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
+  .mail-info{flex:1;min-width:0}.mail-from{font-weight:600;font-size:14px;color:var(--navy)}
+  .mail-desc{font-size:13px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mail-date{font-size:11px;color:var(--muted);margin-top:4px}
+  .mail-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0}
+  .status-badge{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:20px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+  .status-badge.pending{background:var(--orange-light);color:var(--orange)}
+  .status-badge.scanned{background:var(--gold-light);color:#8a6a10}
+  .status-badge.sent{background:var(--green-light);color:var(--green)}
+  .status-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+  .btn-status{background:transparent;border:1px solid var(--border);border-radius:8px;padding:4px 10px;font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;color:var(--muted);transition:all .2s}
+  .btn-status:hover{border-color:var(--navy);color:var(--navy)}
+  .client-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}
+  .client-chip{padding:8px 14px;border-radius:20px;border:1.5px solid var(--border);font-size:13px;font-weight:500;cursor:pointer;background:var(--card);transition:all .2s;display:flex;align-items:center;gap:6px}
+  .client-chip.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .client-chip:hover:not(.active){border-color:var(--navy)}
+  .chip-badge{border-radius:10px;padding:1px 7px;font-size:11px;font-weight:700;color:#fff}
+  .chip-del{opacity:.45;font-size:13px;line-height:1;transition:opacity .15s}.chip-del:hover{opacity:1}
+  .detail-panel{background:var(--card);border-radius:14px;padding:28px;box-shadow:var(--shadow);margin-top:12px;display:none}
+  .detail-panel.open{display:block;animation:fadeIn .25s ease}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .detail-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px}
+  .detail-title{font-family:'DM Serif Display',serif;font-size:20px;color:var(--navy)}
+  .btn-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);padding:4px}
+  .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+  .detail-field label{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .detail-field p{font-size:14px;color:var(--navy);margin-top:3px}
+  .detail-image{width:100%;height:160px;background:var(--bg);border-radius:10px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--muted);margin-bottom:16px;text-align:center;line-height:1.8}
+  .timeline{margin-top:16px}.timeline-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:10px}
+  .timeline-item{display:flex;gap:12px;margin-bottom:8px}.tl-dot{width:8px;height:8px;border-radius:50%;background:var(--gold);margin-top:5px;flex-shrink:0}
+  .tl-text{font-size:13px;color:var(--text)}
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(26,39,68,.5);z-index:1000;align-items:center;justify-content:center}
+  .modal-overlay.open{display:flex}
+  .modal{background:var(--card);border-radius:20px;padding:36px;width:480px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.25);animation:popIn .25s ease}
+  @keyframes popIn{from{opacity:0;transform:scale(.94) translateY(10px)}to{opacity:1;transform:none}}
+  .modal-title{font-family:'DM Serif Display',serif;font-size:22px;color:var(--navy);margin-bottom:20px}
+  .modal label{display:block;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  .modal input,.modal select,.modal textarea{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);background:var(--bg);margin-bottom:14px;outline:none;transition:border-color .2s}
+  .modal input:focus,.modal select:focus,.modal textarea:focus{border-color:var(--gold)}
+  .modal textarea{resize:vertical;min-height:70px}
+  .modal-note{font-size:12px;color:var(--muted);background:var(--bg);border-radius:8px;padding:10px 12px;margin-bottom:14px;border-left:3px solid var(--gold)}
+  .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:6px}
+  .btn-cancel{background:transparent;border:1.5px solid var(--border);border-radius:10px;padding:10px 20px;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;transition:all .2s;color:var(--muted)}
+  .btn-cancel:hover{border-color:var(--navy);color:var(--navy)}
+  .btn-save{background:var(--navy);color:#fff;border:none;border-radius:10px;padding:10px 24px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s}
+  .btn-save:hover:not(:disabled){background:#243563}.btn-save:disabled{opacity:.6;cursor:not-allowed}
+  .btn-delete{background:var(--red);color:#fff;border:none;border-radius:10px;padding:10px 24px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s}
+  .btn-delete:hover:not(:disabled){background:#a93226}.btn-delete:disabled{opacity:.6;cursor:not-allowed}
+  .info-card{background:var(--navy);color:#fff;border-radius:14px;padding:22px 24px;margin-bottom:24px;display:flex;gap:14px;align-items:flex-start}
+  .info-card h3{font-size:15px;font-weight:700;margin-bottom:6px}
+  .info-card .step{display:flex;gap:8px;margin-top:6px;font-size:13px;color:rgba(255,255,255,.8)}
+  .step-num{background:var(--gold);color:var(--navy);width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
+  .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spinning .7s linear infinite;vertical-align:middle;margin-right:6px}
+  @keyframes spinning{to{transform:rotate(360deg)}}
+  .empty-state{text-align:center;padding:60px 20px;color:var(--muted)}.empty-state .icon{font-size:48px;margin-bottom:14px}
+  .hidden{display:none!important}
+  .buzon-banner{background:var(--gold-light);border-radius:10px;padding:10px 16px;margin-bottom:14px;font-size:13px;color:#7a5c10}
+</style>
 </head>
 <body>
-<p class="p1"><span class="s1">Mail</span><span class="s2">Box</span><span class="s1"> Virtual</span></p>
-<p class="p2"><span class="s1">Portal de correspondencia · Hollywood, FL</span></p>
-<p class="p3"><span class="s1">USUARIOhttps://script.google.com/macros/s/AKfycbzng6IbzwBLyaKIae3Hscq6UzZW3YJa_fpHZH-DViILUzn82vhZEY2SqC6IKVCjmTxF/exec</span></p>
-<p class="p3"><span class="s1">CONTRASEÑA</span></p>
-<p class="p4"><span class="s3">Entrar al portal</span></p>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Mail<span>Box</span> Virtual</div>
+    <div class="login-subtitle">Portal de correspondencia · Hollywood, FL</div>
+    <label class="flabel">Usuario</label>
+    <input type="text" id="login-user" class="finput" placeholder="Tu nombre de usuario" autocomplete="username">
+    <label class="flabel">Contraseña</label>
+    <input type="password" id="login-pass" class="finput" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    <div id="login-error" class="err-box"></div>
+    <button class="btn-primary" id="login-btn" onclick="doLogin()">Entrar al portal</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="header">
+    <div class="header-logo">Mail<span>Box</span> Virtual</div>
+    <div class="header-right">
+      <span id="hdr-admin" class="admin-badge hidden">Admin</span>
+      <span id="hdr-user" class="user-badge"></span>
+      <button class="btn-logout" onclick="doLogout()">Salir</button>
+    </div>
+  </div>
+  <div class="tabs">
+    <div class="tab active" data-tab="inbox" onclick="showTab('inbox')">📬 Mi Correspondencia</div>
+    <div class="tab hidden" id="tab-admin-btn" data-tab="admin" onclick="showTab('admin')">⚙️ Panel Admin</div>
+  </div>
+  <div class="content">
+    <div id="tab-inbox">
+      <div class="stats-row" id="stats-row"></div>
+      <div class="section-header"><div class="section-title">Historial de correo</div></div>
+      <div id="mail-list"></div>
+      <div id="detail-panel" class="detail-panel"></div>
+    </div>
+    <div id="tab-admin-content" style="display:none">
+      <div class="info-card">
+        <div style="font-size:24px;flex-shrink:0">💡</div>
+        <div>
+          <h3>Panel de administración</h3>
+          <div class="step"><div class="step-num">1</div><span>Selecciona un cliente o crea uno nuevo</span></div>
+          <div class="step"><div class="step-num">2</div><span>Agrega la correspondencia recibida</span></div>
+          <div class="step"><div class="step-num">3</div><span>Actualiza el estado conforme avanza</span></div>
+        </div>
+      </div>
+      <div class="section-header">
+        <div class="section-title">Clientes</div>
+        <div style="display:flex;gap:10px">
+          <button class="btn-nav" onclick="openNewClientModal()">+ Nuevo cliente</button>
+          <button class="btn-add" onclick="openAddMailModal()">+ Agregar correo recibido</button>
+        </div>
+      </div>
+      <div class="client-tabs" id="admin-client-tabs"></div>
+      <div id="admin-mail-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: NUEVO CLIENTE -->
+<div class="modal-overlay" id="nc-modal">
+  <div class="modal">
+    <div class="modal-title">Nuevo cliente</div>
+    <label>Nombre completo</label>
+    <input type="text" id="nc-name" placeholder="Ej: Juan Pérez">
+    <label>País</label>
+    <input type="text" id="nc-country" placeholder="Ej: 🇵🇦 Panamá">
+    <label>Buzón físico asignado &nbsp;<span style="color:var(--gold);font-size:11px;text-transform:none;letter-spacing:0">🔒 solo visible para ti</span></label>
+    <input type="text" id="nc-buzon" placeholder="Ej: Suite 204 / Box 47 / Casillero 12">
+    <div class="modal-note">📌 El buzón aparece únicamente en tu panel de admin. El cliente nunca lo ve.</div>
+    <label>Usuario de acceso</label>
+    <input type="text" id="nc-user" placeholder="Ej: jperez  (sin espacios)">
+    <label>Contraseña</label>
+    <input type="text" id="nc-pass" placeholder="Ej: Perez@2025">
+    <div id="nc-error" class="err-box"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('nc-modal')">Cancelar</button>
+      <button class="btn-save" id="nc-btn" onclick="saveNewClient()">Crear cliente</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ELIMINAR CLIENTE -->
+<div class="modal-overlay" id="del-modal">
+  <div class="modal">
+    <div class="modal-title">Eliminar cliente</div>
+    <p style="font-size:14px;margin-bottom:8px">Vas a eliminar a <strong id="del-name"></strong>.</p>
+    <p style="font-size:13px;color:var(--red);margin-bottom:20px">⚠️ Se eliminará también toda su correspondencia. Esta acción no se puede deshacer.</p>
+    <div id="del-error" class="err-box"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('del-modal')">Cancelar</button>
+      <button class="btn-delete" id="del-btn" onclick="confirmDeleteClient()">Sí, eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: AGREGAR CORREO -->
+<div class="modal-overlay" id="mail-modal">
+  <div class="modal">
+    <div class="modal-title">Nuevo correo recibido</div>
+    <label>Cliente</label>
+    <select id="m-client"></select>
+    <label>Remitente / Empresa</label>
+    <input type="text" id="m-from" placeholder="Ej: Bank of America, IRS, Amazon...">
+    <label>Tipo</label>
+    <select id="m-type">
+      <option>📄 Carta / Documento</option>
+      <option>📦 Paquete</option>
+      <option>🏦 Correspondencia bancaria</option>
+      <option>🏛️ Documento oficial / Gobierno</option>
+      <option>📧 Notificación</option>
+      <option>💳 Tarjeta / Credencial</option>
+    </select>
+    <label>Descripción</label>
+    <textarea id="m-desc" placeholder="Ej: Estado de cuenta diciembre 2024, peso aprox 30g..."></textarea>
+    <label>Estado inicial</label>
+    <select id="m-status">
+      <option value="pending">⏳ Pendiente (recién recibido)</option>
+      <option value="scanned">📷 Escaneado y enviado por email</option>
+      <option value="sent">✅ Enviado físicamente por UPS</option>
+    </select>
+    <div id="mail-error" class="err-box"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('mail-modal')">Cancelar</button>
+      <button class="btn-save" id="mail-btn" onclick="saveNewMail()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  👇 PEGA AQUÍ LA URL DE TU APPS SCRIPT (paso 4)
+// ═══════════════════════════════════════════════════
+const API = 'https://script.google.com/macros/s/AKfycbzng6IbzwBLyaKIae3Hscq6UzZW3YJa_fpHZH-DViILUzn82vhZEY2SqC6IKVCjmTxF/exec';
+
+const STATUS_LABELS  = {pending:'Pendiente',scanned:'Escaneado',sent:'Enviado UPS'};
+const STATUS_CLASSES = {pending:'pending',scanned:'scanned',sent:'sent'};
+const EMOJIS         = {pending:'⏳',scanned:'📷',sent:'✅'};
+
+let currentUser   = null, isAdmin = false;
+let clients       = [];
+let mailCache     = {};
+let activeClient  = null;
+let openDetailId  = null;
+let clientToDel   = null;
+
+async function api(action, body={}) {
+  const r = await fetch(API, {method:'POST', body:JSON.stringify({action,...body})});
+  return r.json();
+}
+
+window.onload = () => {
+  document.getElementById('login-screen').style.display = 'flex';
+};
+
+async function doLogin() {
+  const username = document.getElementById('login-user').value.trim();
+  const password = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('login-error');
+  const btn   = document.getElementById('login-btn');
+  errEl.style.display = 'none';
+  if (!username||!password){errEl.textContent='Ingresa usuario y contraseña';errEl.style.display='block';return}
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span>Verificando…';
+  const data = await api('login',{username,password}).catch(()=>({ok:false,error:'Sin conexión con el servidor'}));
+  btn.disabled=false; btn.textContent='Entrar al portal';
+  if(!data.ok){errEl.textContent=data.error||'Error';errEl.style.display='block';return}
+  currentUser=data.user; isAdmin=data.user.rol==='admin';
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='flex';
+  document.getElementById('hdr-user').textContent=isAdmin?'Administrador':data.user.nombre;
+  if(isAdmin){
+    document.getElementById('hdr-admin').classList.remove('hidden');
+    document.getElementById('tab-admin-btn').classList.remove('hidden');
+    await loadClients(); showTab('admin');
+  } else { showTab('inbox'); }
+}
+
+function doLogout(){
+  currentUser=null;isAdmin=false;clients=[];mailCache={};activeClient=null;
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('login-user').value='';
+  document.getElementById('login-pass').value='';
+  document.getElementById('login-error').style.display='none';
+  document.getElementById('hdr-admin').classList.add('hidden');
+  document.getElementById('tab-admin-btn').classList.add('hidden');
+}
+
+function showTab(tab){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelector(`[data-tab="${tab}"]`)?.classList.add('active');
+  document.getElementById('tab-inbox').style.display=tab==='inbox'?'':'none';
+  document.getElementById('tab-admin-content').style.display=tab==='admin'?'':'none';
+  if(tab==='inbox')renderInbox();
+  if(tab==='admin')renderAdmin();
+}
+
+async function renderInbox(){
+  const uid  = currentUser.id;
+  const list = document.getElementById('mail-list');
+  if(!mailCache[uid]){
+    list.innerHTML='<div class="empty-state"><div class="icon">⏳</div><p>Cargando…</p></div>';
+    const d=await api('getMail',{clientId:uid}).catch(()=>({ok:false}));
+    mailCache[uid]=d.ok?d.mails:[];
+  }
+  const mails=mailCache[uid];
+  const total=mails.length, pending=mails.filter(m=>m.status==='pending').length, sent=mails.filter(m=>m.status==='sent').length;
+  document.getElementById('stats-row').innerHTML=`
+    <div class="stat-card"><div class="stat-icon" style="background:#eef0f8">📬</div><div><div class="stat-val">${total}</div><div class="stat-label">Total recibidos</div></div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:var(--orange-light)">⏳</div><div><div class="stat-val">${pending}</div><div class="stat-label">Pendientes</div></div></div>
+    <div class="stat-card"><div class="stat-icon" style="background:var(--green-light)">✅</div><div><div class="stat-val">${sent}</div><div class="stat-label">Enviados a ti</div></div></div>`;
+  if(!mails.length){list.innerHTML='<div class="empty-state"><div class="icon">📭</div><p>No hay correspondencia aún</p></div>';return}
+  list.innerHTML=[...mails].reverse().map(m=>`
+    <div class="mail-card" onclick="toggleDetail('${m.id}')">
+      <div class="mail-thumb">${getEmoji(m.tipo)}</div>
+      <div class="mail-info">
+        <div class="mail-from">${m.remitente}</div>
+        <div class="mail-desc">${m.tipo} · ${m.desc}</div>
+        <div class="mail-date">📅 ${fmtDate(m.fecha)}</div>
+      </div>
+      <div class="mail-right">
+        <span class="status-badge ${STATUS_CLASSES[m.status]}"><span class="status-dot"></span>${STATUS_LABELS[m.status]}</span>
+      </div>
+    </div>`).join('');
+}
+
+function toggleDetail(id){
+  const panel=document.getElementById('detail-panel');
+  if(openDetailId===id){openDetailId=null;panel.classList.remove('open');return}
+  openDetailId=id;
+  const m=(mailCache[currentUser.id]||[]).find(x=>x.id===id);
+  if(!m)return;
+  panel.innerHTML=`
+    <div class="detail-header">
+      <div class="detail-title">${m.remitente}</div>
+      <button class="btn-close" onclick="toggleDetail('${id}')">✕</button>
+    </div>
+    <div class="detail-image">📷 Aquí aparecería el scan/foto del sobre<br><span style="font-size:11px">(Integra Google Drive para mostrar la imagen)</span></div>
+    <div class="detail-grid">
+      <div class="detail-field"><label>Tipo</label><p>${m.tipo}</p></div>
+      <div class="detail-field"><label>Fecha recibido</label><p>${fmtDate(m.fecha)}</p></div>
+      <div class="detail-field"><label>Estado</label><p><span class="status-badge ${STATUS_CLASSES[m.status]}">${EMOJIS[m.status]} ${STATUS_LABELS[m.status]}</span></p></div>
+      <div class="detail-field"><label>Descripción</label><p>${m.desc}</p></div>
+    </div>
+    <div class="timeline">
+      <div class="timeline-title">Historial de seguimiento</div>
+      ${m.timeline.map(t=>`<div class="timeline-item"><div class="tl-dot"></div><div class="tl-text">${t}</div></div>`).join('')}
+    </div>`;
+  panel.classList.add('open');
+  setTimeout(()=>panel.scrollIntoView({behavior:'smooth',block:'nearest'}),100);
+}
+
+async function loadClients(){
+  const d=await api('getClients').catch(()=>({ok:false}));
+  clients=d.ok?d.clients:[];
+  if(clients.length&&!activeClient)activeClient=clients[0].id;
+}
+
+function renderAdmin(){
+  const el=document.getElementById('admin-client-tabs');
+  if(!clients.length){
+    el.innerHTML='<p style="color:var(--muted);font-size:13px">No hay clientes. Crea el primero.</p>';
+    document.getElementById('admin-mail-list').innerHTML='';
+    return;
+  }
+  el.innerHTML=clients.map(c=>{
+    const pend=(mailCache[c.id]||[]).filter(m=>m.status==='pending').length;
+    return `<div class="client-chip ${c.id===activeClient?'active':''}" onclick="setAdminClient('${c.id}')">
+      ${c.pais} ${c.nombre}
+      <span class="chip-badge" style="background:${pend?'#e07a27':'#bbb'}">${pend||'·'}</span>
+      <span class="chip-del" title="Eliminar" onclick="promptDelete('${c.id}','${esc(c.nombre)}',event)">✕</span>
+    </div>`;
+  }).join('');
+  renderAdminMailList();
+}
+
+async function setAdminClient(id){
+  activeClient=id; renderAdmin();
+  if(!mailCache[id]){await loadMail(id);}
+  renderAdminMailList();
+}
+
+async function loadMail(clientId){
+  const d=await api('getMail',{clientId}).catch(()=>({ok:false}));
+  mailCache[clientId]=d.ok?d.mails:[];
+}
+
+function renderAdminMailList(){
+  const list=document.getElementById('admin-mail-list');
+  const mails=mailCache[activeClient]||[];
+  const c=clients.find(x=>x.id===activeClient);
+  const buzonHtml=c&&c.buzon?`<div class="buzon-banner">🔒 <strong>Buzón asignado:</strong> ${c.buzon}</div>`:'';
+  if(!mails.length){list.innerHTML=buzonHtml+'<div class="empty-state"><div class="icon">📭</div><p>Sin correspondencia para este cliente</p></div>';return}
+  list.innerHTML=buzonHtml+[...mails].reverse().map(m=>`
+    <div class="mail-card">
+      <div class="mail-thumb">${getEmoji(m.tipo)}</div>
+      <div class="mail-info">
+        <div class="mail-from">${m.remitente}</div>
+        <div class="mail-desc">${m.tipo} · ${m.desc}</div>
+        <div class="mail-date">📅 ${fmtDate(m.fecha)}</div>
+      </div>
+      <div class="mail-right">
+        <span class="status-badge ${STATUS_CLASSES[m.status]}"><span class="status-dot"></span>${STATUS_LABELS[m.status]}</span>
+        ${m.status!=='sent'?`<button class="btn-status" onclick="advanceStatus('${m.id}',event)">${m.status==='pending'?'Marcar escaneado':'Marcar enviado UPS'}</button>`:''}
+      </div>
+    </div>`).join('');
+}
+
+async function advanceStatus(mailId,e){
+  e.stopPropagation();
+  const m=(mailCache[activeClient]||[]).find(x=>x.id===mailId);
+  if(!m)return;
+  const newStatus=m.status==='pending'?'scanned':'sent';
+  const btn=e.target; btn.disabled=true; btn.textContent='…';
+  const d=await api('updateStatus',{mailId,newStatus}).catch(()=>({ok:false}));
+  if(d.ok){delete mailCache[activeClient];await loadMail(activeClient);renderAdminMailList();}
+  else{btn.disabled=false;btn.textContent='Reintentar';alert('Error al actualizar');}
+}
+
+function openNewClientModal(){
+  ['nc-name','nc-country','nc-buzon','nc-user','nc-pass'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('nc-error').style.display='none';
+  openModal('nc-modal');
+}
+
+async function saveNewClient(){
+  const nombre  =document.getElementById('nc-name').value.trim();
+  const pais    =document.getElementById('nc-country').value.trim();
+  const buzon   =document.getElementById('nc-buzon').value.trim();
+  const usuario =document.getElementById('nc-user').value.trim().toLowerCase().replace(/\s+/g,'');
+  const password=document.getElementById('nc-pass').value.trim();
+  const errEl   =document.getElementById('nc-error');
+  const btn     =document.getElementById('nc-btn');
+  errEl.style.display='none';
+  if(!nombre){errEl.textContent='Ingresa el nombre';errEl.style.display='block';return}
+  if(!usuario){errEl.textContent='Ingresa el usuario';errEl.style.display='block';return}
+  if(!password){errEl.textContent='Ingresa la contraseña';errEl.style.display='block';return}
+  btn.disabled=true;btn.innerHTML='<span class="spin"></span>Guardando…';
+  const d=await api('addClient',{nombre,pais,buzon,usuario,password}).catch(()=>({ok:false,error:'Sin conexión'}));
+  btn.disabled=false;btn.textContent='Crear cliente';
+  if(!d.ok){errEl.textContent=d.error||'Error al guardar';errEl.style.display='block';return}
+  closeModal('nc-modal');
+  await loadClients(); activeClient=d.id; renderAdmin();
+  alert(`✅ Cliente creado exitosamente\n\n👤 Nombre: ${nombre}\n🔑 Usuario: ${usuario}\n🔒 Contraseña: ${password}\n\nGuarda estas credenciales para dárselas al cliente.`);
+}
+
+function promptDelete(id,nombre,e){
+  e.stopPropagation();
+  clientToDel=id;
+  document.getElementById('del-name').textContent=nombre;
+  document.getElementById('del-error').style.display='none';
+  openModal('del-modal');
+}
+
+async function confirmDeleteClient(){
+  const btn  =document.getElementById('del-btn');
+  const errEl=document.getElementById('del-error');
+  btn.disabled=true;btn.innerHTML='<span class="spin"></span>Eliminando…';
+  const d=await api('deleteClient',{clientId:clientToDel}).catch(()=>({ok:false,error:'Sin conexión'}));
+  btn.disabled=false;btn.textContent='Sí, eliminar';
+  if(!d.ok){errEl.textContent=d.error||'Error al eliminar';errEl.style.display='block';return}
+  delete mailCache[clientToDel];
+  closeModal('del-modal');
+  await loadClients();
+  activeClient=clients.length?clients[0].id:null;
+  renderAdmin();
+}
+
+function openAddMailModal(){
+  const sel=document.getElementById('m-client');
+  sel.innerHTML=clients.map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');
+  if(activeClient)sel.value=activeClient;
+  document.getElementById('m-from').value='';
+  document.getElementById('m-desc').value='';
+  document.getElementById('mail-error').style.display='none';
+  openModal('mail-modal');
+}
+
+async function saveNewMail(){
+  const clientId =document.getElementById('m-client').value;
+  const remitente=document.getElementById('m-from').value.trim();
+  const tipo     =document.getElementById('m-type').value;
+  const desc     =document.getElementById('m-desc').value.trim();
+  const status   =document.getElementById('m-status').value;
+  const errEl    =document.getElementById('mail-error');
+  const btn      =document.getElementById('mail-btn');
+  errEl.style.display='none';
+  if(!remitente){errEl.textContent='Ingresa el remitente';errEl.style.display='block';return}
+  btn.disabled=true;btn.innerHTML='<span class="spin"></span>Guardando…';
+  const d=await api('addMail',{clientId,remitente,tipo,desc,status}).catch(()=>({ok:false,error:'Sin conexión'}));
+  btn.disabled=false;btn.textContent='Guardar';
+  if(!d.ok){errEl.textContent=d.error||'Error al guardar';errEl.style.display='block';return}
+  delete mailCache[clientId];
+  closeModal('mail-modal');
+  activeClient=clientId;
+  await loadMail(clientId);
+  renderAdmin();
+}
+
+function openModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+
+function getEmoji(t){
+  if(!t)return'📄';
+  if(t.includes('Paquete'))return'📦';
+  if(t.includes('Banca')||t.includes('bancaria'))return'🏦';
+  if(t.includes('Gobierno')||t.includes('oficial'))return'🏛️';
+  if(t.includes('Tarjeta'))return'💳';
+  return'📄';
+}
+function fmtDate(d){
+  if(!d)return'';
+  const[y,m,day]=d.split('-');
+  const ms=['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  return`${day} ${ms[+m]} ${y}`;
+}
+function esc(s){return String(s).replace(/'/g,"&#39;").replace(/"/g,"&quot;")}
+</script>
 </body>
 </html>
